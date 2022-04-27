@@ -1,0 +1,43 @@
+version: '3.8'
+
+volumes: 
+  mongo_vol:
+
+networks:
+  produto_net:
+    driver: bridge
+
+services:
+  #DEFINE CONTAINER DA APLICAÇÃO
+  api:
+    image: felipejm91/api-produto:v1
+    #LÊ VARIÁVEL DO ARQUIVO .env
+    #image: felipejm91/api-produto:${TAG}
+    #INFORMA QUE A IMAGEM VAI SER CONSTRUIDA CASO AINDA NÃO TENHA SIDO CRIADA OU DESEJA SER CRIADA NA HORA DE EXECUTAR O DOCKER COMPOSE
+    #build: 
+    #  dockerfile: ./Dockerfile
+    #  context: ./
+    ports: 
+      - 8080:8080
+    networks:
+      - produto_net
+    #DEFINE QUE O CONTAINER DA APLICAÇÃO DEPENDE DO CONTAINER DO MONGODB, QUE SERÁ CRIADO PRIMEIRO
+    depends_on:
+      - mongodb
+    environment:
+      MONGODB_URI: mongodb://mongouser:mongopwd@nome_container_mongodb:27017/
+
+  #DEFINE CONTAINER DO MONGODB
+  mongodb:
+    image: mongo:4.4.3
+    #NÃO É NECESSÁRIO DECLARAR A PORTA NESSE CASO, POIS COMUNICAÇÃO ENTRE CONTAINERS É FEITA PELA NETWORK, AQUI É LIBERADO CONEXÃO REMOTA AO CONTAINER
+    ports:
+      - 27017:27017
+    networks:
+      - produto_net
+    volumes:
+      - mongo_vol: /data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: mongouser
+      MONGO_INITDB_ROOT_PASSWORD: mongopwd
+
