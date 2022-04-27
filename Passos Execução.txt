@@ -2,14 +2,36 @@
     docker volume create mongo_vol
 
 2- rodou um container mongodb
-    docker container run -d -e MONGO_INITDB_ROOT_USERNAME=mongouser -e MONGO_INITDB_ROOT_PASSWORD=mongopwd -v mongo_vol:/data/db -p 27010:27017 mongo:4.4.3
+    docker container run -d --name nome_container_mongodb -e MONGO_INITDB_ROOT_USERNAME=mongouser -e MONGO_INITDB_ROOT_PASSWORD=mongopwd -v mongo_vol:/data/db -p 27010:27017 mongo:4.4.3
 
 3-criou o banco de dados
 
 4-criou docker file da aplicação
 
 5-criou imagem
-    docker build -t felipejm91/api-produto:v1
+    *Criar imagem
+        docker build -t felipejm91/api-produto:v1
+    
+    *Muda versão para latest
+        docker tag felipejm91/api-produto:v1 felipejm91/api-produto:latest
 
-6-
+6-subiu imagem para dockerhub
+    *Loga no dockerhub
+        docker login
+    
+    *Sobe as imagens para dockerhub
+        docker push felipejm91/api-produto:v1
+        docker push felipejm91/api-produto:v1
+
+7-conectar container da aplicação com container do mongodb. Necessário criar uma network entre os containers 
+    *Cria a network
+        docker network create produto_net
+
+    *Linkar os containers com a network
+        docker network connect produto_net id_container_mongodb
+
+    *Executa container da aplicação. Variáveis de ambiente no código da aplicação
+        docker container run -d --name nome_container_aplicacao -p 8080:8080 --network produto_net -e MONGODB_URI=mongodb://mongouser:mongopwd@nome_container_mongodb:27017/admin felipejm91/api-produto:v1
+        OBS: editar MONGODB_URI no código da aplicação
+
 
